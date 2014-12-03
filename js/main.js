@@ -265,23 +265,32 @@ function drawNinepatchLines(w, h) {
 }
 
 function redraw() {
+    //Limit ranges for input
+    var minRadius = 0, maxRadius = 500;
+    var minOffset = -500, maxOffset = 500;
+    var minBlur = 0, maxBlur = 500;
+    var minOutlineW = 0, maxOutlineW = 99;
+
     var colorFill = $("#color-picker-fill-input");
     var outlineFill = $("#color-picker-outline-input");
+    var colorShadow = $("#color-picker-shadow-input");
 
-    shadowBlur = $("#shadow-blur").val();
-    shadowColor = $("#color-picker-shadow-input").val();
-    shadowOffsetX = parseFloat($("#shadow-offset-x").val());
-    shadowOffsetY = parseFloat($("#shadow-offset-y").val());
+    shadowBlur = parseFloatAndClamp($("#shadow-blur").val(), minBlur, maxBlur);
+    shadowOffsetX = parseFloatAndClamp($("#shadow-offset-x").val(), minOffset, maxOffset, 0);
+    shadowOffsetY = parseFloatAndClamp($("#shadow-offset-y").val(), minOffset, maxOffset, 0);
+    outlineWidth = parseFloatAndClamp($("#outline-width-input").val(), minOutlineW, maxOutlineW);
+    isTransparentFill = colorFill.prop("disabled");
+
+    shadowColor = colorShadow.val();
     fillColor = colorFill.val();
     outlineColor = outlineFill.val();
-    isTransparentFill = colorFill.prop("disabled");
-    outlineWidth = parseFloat($("#outline-width-input").val());
     //currentType = $("#rectOpt").is(":checked") ? SHADOW_TYPE.Rect : SHADOW_TYPE.Ellipse;
+
     roundRadius = {
-        upperLeft: parseFloat($("#shadow-round-tl").val()),
-        upperRight: parseFloat($("#shadow-round-tr").val()),
-        lowerLeft: parseFloat($("#shadow-round-bl").val()),
-        lowerRight: parseFloat($("#shadow-round-br").val())
+        upperLeft: parseFloatAndClamp($("#shadow-round-tl").val(), minRadius, maxRadius),
+        upperRight: parseFloatAndClamp($("#shadow-round-tr").val(), minRadius, maxRadius),
+        lowerLeft: parseFloatAndClamp($("#shadow-round-bl").val(), minRadius, maxRadius),
+        lowerRight: parseFloatAndClamp($("#shadow-round-br").val(), minRadius, maxRadius)
     };
 
     currentType = SHADOW_TYPE.Rect;
@@ -290,6 +299,15 @@ function redraw() {
         drawShadowRect(objectWidth, objectHeight, roundRadius);
     } else {
         //drawShadowEllipse(260);
+    }
+}
+
+function parseFloatAndClamp(val, min, max, noneValue) {
+    var num = parseFloat(val);
+    if (isNaN(num)) {
+        return (typeof noneValue !== "undefined") ? noneValue : min;
+    } else {
+        return Math.min(Math.max(min, val), max);
     }
 }
 
@@ -375,16 +393,26 @@ $(document).ready(function () {
         var mousePos = getMousePos(canvas, e);
 
         if (boxResizeMode != BOX_RESIZE_TYPE.None) {
-            if (boxResizeMode == BOX_RESIZE_TYPE.Right || boxResizeMode == BOX_RESIZE_TYPE.Corner) {
+            var minObjectSize = 10;
+            var draw = false;
+            var objectWidthChanged = boxResizeData.startSizeObject.width + mousePos.x - boxResizeData.startPos.x;
+            var objectHeightChanged = boxResizeData.startSizeObject.height + mousePos.y - boxResizeData.startPos.y;
+
+            if ((boxResizeMode == BOX_RESIZE_TYPE.Right || boxResizeMode == BOX_RESIZE_TYPE.Corner) && objectWidthChanged > minObjectSize) {
                 canvas.width = boxResizeData.startSizeCanvas.width + mousePos.x - boxResizeData.startPos.x;
-                objectWidth = boxResizeData.startSizeObject.width + mousePos.x - boxResizeData.startPos.x;
+                objectWidth = objectWidthChanged;
+                draw = true;
             }
 
-            if (boxResizeMode == BOX_RESIZE_TYPE.Bottom || boxResizeMode == BOX_RESIZE_TYPE.Corner) {
+            if ((boxResizeMode == BOX_RESIZE_TYPE.Bottom || boxResizeMode == BOX_RESIZE_TYPE.Corner) && objectHeightChanged > minObjectSize) {
                 canvas.height = boxResizeData.startSizeCanvas.height + mousePos.y - boxResizeData.startPos.y;
-                objectHeight = boxResizeData.startSizeObject.height + mousePos.y - boxResizeData.startPos.y;
+                objectHeight = objectHeightChanged;
+                draw = true;
             }
-            drawShadowInternal(objectWidth, objectHeight, roundRadius, currentType, true,  false);
+
+            if (draw) {
+                drawShadowInternal(objectWidth, objectHeight, roundRadius, currentType, true, false);
+            }
         } else {
             isAnchor(e);
         }
