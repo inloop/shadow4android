@@ -3,6 +3,18 @@ shadow4android
 
 *Android 9-patch shadow generator*
 
+#### Examples
+![](/examples/fill.png?raw=true "Shadow with Fill")
+![](/examples/transparent.png?raw=true "Shadow")
+
+Layout XML files: 
+
+* [filled rect with shadow for content panels etc.](/examples/shadow_fill.xml?raw=true)
+* [transparent shadow for photos, textures  etc.](/examples/shadow_transparent.xml?raw=true)
+
+> [Youtube  example](https://www.youtube.com/watch?v=ZOK6gEH8qIU)
+
+
 ###License
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
