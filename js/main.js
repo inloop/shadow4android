@@ -240,8 +240,19 @@ function drawNinepatchLines(w, h) {
     ctx.strokeStyle = "black";
     ctx.lineWidth = 2;
 
+    var s = 0;
     var offsetX = getRelativeX();
     var offsetY = getRelativeY();
+    var width = canvas.width;
+    var height = canvas.height;
+
+    //Subtract outline width from content padding
+    if (!isTransparentFill) {
+        w -= outlineWidth;
+        h -= outlineWidth;
+        offsetX += outlineWidth / 2;
+        offsetY += outlineWidth / 2;
+    }
 
     //Draw left
     s = h / 2;
@@ -254,12 +265,12 @@ function drawNinepatchLines(w, h) {
     ctx.lineTo(offsetX + s + lineWidthPatch, 0);
 
     //Draw right
-    ctx.moveTo(canvas.width, offsetY);
-    ctx.lineTo(canvas.width, offsetY + h);
+    ctx.moveTo(width, offsetY);
+    ctx.lineTo(width, offsetY + h);
 
     //Draw bottom
-    ctx.moveTo(offsetX, canvas.height);
-    ctx.lineTo(offsetX + w, canvas.height);
+    ctx.moveTo(offsetX, height);
+    ctx.lineTo(offsetX + w, height);
 
     ctx.stroke();
 }
