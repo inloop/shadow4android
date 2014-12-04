@@ -103,15 +103,15 @@ function drawShadow(w, h, radius, type) {
     isTransparentFill = transparentTmp;
     ctx.clearRect(0,0, canvas.width, canvas.height);
 
-    canvas.width = canvas.width - (boundPos.leftPos + boundPos.rightPos);
-    canvas.height = canvas.height - (boundPos.topPos + boundPos.bottomPos);
+    canvas.width = Math.round(canvas.width - (boundPos.leftPos + boundPos.rightPos));
+    canvas.height = Math.round(canvas.height - (boundPos.topPos + boundPos.bottomPos));
     drawNinepatchLines(w, h);
     drawShadowInternal(w, h, radius, type, false, true);
 }
 
 function drawShadowInternal(w, h, radius, type, center, translate) {
-    var centerPosX = (canvas.width / 2) - (w / 2);
-    var centerPosY = (canvas.height / 2) - (h / 2);
+    var centerPosX = Math.round((canvas.width / 2) - (w / 2));
+    var centerPosY = Math.round((canvas.height / 2) - (h / 2));
     var x = 0, y = 0;
     var offsetForTransparent = -9999;
 
@@ -176,11 +176,11 @@ function drawShadowInternal(w, h, radius, type, center, translate) {
 }
 
 function getRelativeX() {
-    return (CANVAS_MAX_WIDTH / 2) - (objectWidth / 2) - boundPos.leftPos;
+    return Math.round((CANVAS_MAX_WIDTH / 2) - (objectWidth / 2) - boundPos.leftPos);
 }
 
 function getRelativeY() {
-    return (CANVAS_MAX_HEIGHT / 2) - (objectHeight / 2) - boundPos.topPos;
+    return Math.round((CANVAS_MAX_HEIGHT / 2) - (objectHeight / 2) - boundPos.topPos);
 }
 
 function searchForNonAlphaPixel(row, col, imgPixels, width, height, opposite) {
@@ -250,27 +250,27 @@ function drawNinepatchLines(w, h) {
     if (!isTransparentFill) {
         w -= outlineWidth;
         h -= outlineWidth;
-        offsetX += outlineWidth / 2;
-        offsetY += outlineWidth / 2;
+        offsetX += Math.round(outlineWidth / 2);
+        offsetY += Math.round(outlineWidth / 2);
     }
 
     //Draw left
     s = h / 2;
-    ctx.moveTo(0, offsetY + s - lineWidthPatch / 2);
-    ctx.lineTo(0, offsetY + s + lineWidthPatch);
+    ctx.moveTo(0, Math.round(offsetY + s - lineWidthPatch / 2));
+    ctx.lineTo(0, Math.round(offsetY + s + lineWidthPatch));
 
     //Draw top
     s = w / 2;
-    ctx.moveTo(offsetX + s - lineWidthPatch / 2, 0);
-    ctx.lineTo(offsetX + s + lineWidthPatch, 0);
+    ctx.moveTo(Math.round(offsetX + s - lineWidthPatch / 2), 0);
+    ctx.lineTo(Math.round(offsetX + s + lineWidthPatch), 0);
 
     //Draw right
-    ctx.moveTo(width, offsetY);
-    ctx.lineTo(width, offsetY + h);
+    ctx.moveTo(Math.round(width), Math.round(offsetY));
+    ctx.lineTo(Math.round(width), Math.round(offsetY + h));
 
     //Draw bottom
-    ctx.moveTo(offsetX, height);
-    ctx.lineTo(offsetX + w, height);
+    ctx.moveTo(Math.round(offsetX), Math.round(height));
+    ctx.lineTo(Math.round(offsetX + w), Math.round(height));
 
     ctx.stroke();
 }
@@ -410,14 +410,14 @@ $(document).ready(function () {
             var objectHeightChanged = boxResizeData.startSizeObject.height + mousePos.y - boxResizeData.startPos.y;
 
             if ((boxResizeMode == BOX_RESIZE_TYPE.Right || boxResizeMode == BOX_RESIZE_TYPE.Corner) && objectWidthChanged > minObjectSize) {
-                canvas.width = boxResizeData.startSizeCanvas.width + mousePos.x - boxResizeData.startPos.x;
-                objectWidth = objectWidthChanged;
+                canvas.width = Math.round(boxResizeData.startSizeCanvas.width + mousePos.x - boxResizeData.startPos.x);
+                objectWidth = Math.round(objectWidthChanged);
                 draw = true;
             }
 
             if ((boxResizeMode == BOX_RESIZE_TYPE.Bottom || boxResizeMode == BOX_RESIZE_TYPE.Corner) && objectHeightChanged > minObjectSize) {
-                canvas.height = boxResizeData.startSizeCanvas.height + mousePos.y - boxResizeData.startPos.y;
-                objectHeight = objectHeightChanged;
+                canvas.height = Math.round(boxResizeData.startSizeCanvas.height + mousePos.y - boxResizeData.startPos.y);
+                objectHeight = Math.round(objectHeightChanged);
                 draw = true;
             }
 
