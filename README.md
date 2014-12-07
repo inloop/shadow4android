@@ -1,3 +1,5 @@
+[![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-shadow4android-brightgreen.svg?style=flat)](https://android-arsenal.com/details/1/1188)
+
 shadow4android
 ==============
 
