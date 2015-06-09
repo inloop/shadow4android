@@ -10,6 +10,8 @@ var shadowColor, fillColor, outlineColor, shadowBlur, shadowOffsetX, shadowOffse
 var updateDelayId;
 var objectWidth = 200, objectHeight = 200;
 var boxResizeMode = 0, boxResizeData = null, BOX_ANCHOR = 6;
+
+var CANVAS_MIN_WIDTH = 10, CANVAS_MIN_HEIGHT = 10;
 var CANVAS_MAX_WIDTH = 1000, CANVAS_MAX_HEIGHT = 1000;
 
 /*CanvasRenderingContext2D.prototype.ellipse = function (x, y, r) {
@@ -399,23 +401,33 @@ $(document).ready(function () {
         updateDelay();
     });
 
+    $("#box-width").on("input", function () {
+        objectWidth = parseFloatAndClamp($(this).val(), CANVAS_MIN_WIDTH, CANVAS_MAX_WIDTH, 0);
+        updateDelay();
+    });
+
+    $("#box-height").on("input", function () {
+        objectHeight = parseFloatAndClamp($(this).val(), CANVAS_MIN_HEIGHT, CANVAS_MAX_HEIGHT, 0);
+        updateDelay();
+    });
+
+
     //Resizing box
     $(this).mousemove(function f(e) {
         var mousePos = getMousePos(canvas, e);
 
         if (boxResizeMode != BOX_RESIZE_TYPE.None) {
-            var minObjectSize = 10;
             var draw = false;
             var objectWidthChanged = boxResizeData.startSizeObject.width + mousePos.x - boxResizeData.startPos.x;
             var objectHeightChanged = boxResizeData.startSizeObject.height + mousePos.y - boxResizeData.startPos.y;
 
-            if ((boxResizeMode == BOX_RESIZE_TYPE.Right || boxResizeMode == BOX_RESIZE_TYPE.Corner) && objectWidthChanged > minObjectSize) {
+            if ((boxResizeMode == BOX_RESIZE_TYPE.Right || boxResizeMode == BOX_RESIZE_TYPE.Corner) && objectWidthChanged >= CANVAS_MIN_WIDTH) {
                 canvas.width = Math.round(boxResizeData.startSizeCanvas.width + mousePos.x - boxResizeData.startPos.x);
                 objectWidth = Math.round(objectWidthChanged);
                 draw = true;
             }
 
-            if ((boxResizeMode == BOX_RESIZE_TYPE.Bottom || boxResizeMode == BOX_RESIZE_TYPE.Corner) && objectHeightChanged > minObjectSize) {
+            if ((boxResizeMode == BOX_RESIZE_TYPE.Bottom || boxResizeMode == BOX_RESIZE_TYPE.Corner) && objectHeightChanged >= CANVAS_MIN_HEIGHT) {
                 canvas.height = Math.round(boxResizeData.startSizeCanvas.height + mousePos.y - boxResizeData.startPos.y);
                 objectHeight = Math.round(objectHeightChanged);
                 draw = true;
@@ -424,6 +436,7 @@ $(document).ready(function () {
             if (draw) {
                 drawShadowInternal(objectWidth, objectHeight, roundRadius, currentType, true, false);
             }
+            updateSizeBoxValues();
         } else {
             isAnchor(e);
         }
@@ -447,7 +460,13 @@ $(document).ready(function () {
     });
 
     redraw();
+    updateSizeBoxValues();
 });
+
+function updateSizeBoxValues() {
+    $("#box-width").val(objectWidth);
+    $("#box-height").val(objectHeight);
+}
 
 function isAnchor(e) {
     var mousePos = getMousePos(canvas, e);
@@ -462,7 +481,6 @@ function isAnchor(e) {
         return true;
     } else if (boxSideCheck(mousePos, rectRight, rectRight, rectTop, rectBottom - BOX_ANCHOR)) {
         $(canvas).css("cursor", "w-resize");
-        console.log("w");
         if (boxResizeData != null) boxResizeMode = BOX_RESIZE_TYPE.Right;
         return true;
     } else if (boxSideCheck(mousePos, rectLeft, rectRight - BOX_ANCHOR, rectBottom, rectBottom)) {
