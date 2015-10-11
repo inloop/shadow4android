@@ -355,9 +355,12 @@ $(document).ready(function () {
         updateDelay();
     });
 
-    $("#color-picker-shadow, #color-picker-fill, #color-picker-outline").colorpicker().on("changeColor", function(ev) {
-        updateDelay();
-    });
+    $("#color-picker-shadow, #color-picker-fill, #color-picker-outline").colorpicker({
+          format: 'rgba', // force this format
+          horizontal: true
+        }).on("changeColor", function(ev) {
+            updateDelay();
+        });
 
     var enableTxt = "enable";
     var disableTxt = "disable";
