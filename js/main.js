@@ -237,6 +237,14 @@ function drawNinepatchLines(w, h) {
     if (hideNinepatches) {
         return;
     }
+
+    var rightPad = $('#padding-right').slider("getValue");
+    var bottomPad = $('#padding-bottom').slider("getValue");
+    var rightPaddingTop = (rightPad[0] / 100);
+    var rightPaddingBottom = ((100 - rightPad[1]) / 100);
+    var bottomPadLeft = (bottomPad[0] / 100);
+    var bottomPadRight = ((100 - bottomPad[1]) / 100);
+
     var lineWidthPatch = 4;
 
     ctx.strokeStyle = "black";
@@ -267,12 +275,12 @@ function drawNinepatchLines(w, h) {
     ctx.lineTo(Math.round(offsetX + s + lineWidthPatch), 0);
 
     //Draw right
-    ctx.moveTo(Math.round(width), Math.round(offsetY));
-    ctx.lineTo(Math.round(width), Math.round(offsetY + h));
+    ctx.moveTo(Math.round(width), Math.round(offsetY + (h * rightPaddingTop)));
+    ctx.lineTo(Math.round(width), Math.round(offsetY + h - (h * rightPaddingBottom)));
 
     //Draw bottom
-    ctx.moveTo(Math.round(offsetX), Math.round(height));
-    ctx.lineTo(Math.round(offsetX + w), Math.round(height));
+    ctx.moveTo(Math.round(offsetX + (w * bottomPadLeft)), Math.round(height));
+    ctx.lineTo(Math.round(offsetX + w - (w * bottomPadRight)), Math.round(height));
 
     ctx.stroke();
 }
@@ -459,9 +467,53 @@ $(document).ready(function () {
         }
     });
 
+    sliderInit();
+
     redraw();
     updateSizeBoxValues();
 });
+
+function sliderInit() {
+    var sliderOptions = {
+        formatter: function (value) {
+            return value[0] + "% : " + (100 - value[1]) + "%";
+        }
+    };
+    var sliderRight = $('#padding-right').slider(sliderOptions);
+    var sliderBottom = $('#padding-bottom').slider(sliderOptions);
+
+    sliderBottom.on("slideStart", function() {
+        sliderToogleTooltip(true, false);
+    });
+    sliderBottom.on("slideStop", function() {
+        redraw();
+        sliderToogleTooltip(true , true);
+    });
+
+    sliderRight.on("slideStart", function() {
+        sliderToogleTooltip(false, false);
+    });
+    sliderRight.on("slideStop", function() {
+        redraw();
+        sliderToogleTooltip(false, true);
+    });
+}
+
+function sliderToogleTooltip(right, visible) {
+    //Fixes slider tooltip bug
+    var slider;
+    if (right) {
+        slider = $('#padding-right-slider').find('.tooltip');
+    } else {
+        slider = $('#padding-bottom-slider').find('.tooltip');
+    }
+    if (visible) {
+        slider.css("display", "");
+    } else {
+        slider.css("display", "none");
+    }
+    $("#padding-right").unbind("mouseenter mouseleave");
+}
 
 function updateSizeBoxValues() {
     $("#box-width").val(objectWidth);

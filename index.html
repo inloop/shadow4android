@@ -8,6 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Android Shadow Generator</title>
     <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/bootstrap-slider.min.css" rel="stylesheet">
     <link href="css/main.css" rel="stylesheet">
     <link href="css/ribbons.min.css" rel="stylesheet">
     <link href="css/bootstrap-colorpicker.min.css" rel="stylesheet">
@@ -149,6 +150,27 @@
                     </div>
                 </div>
 
+                <div class="form-group">
+                    <label class="control-label">Padding lines</label>
+
+                    <div class="form-inline" id="padding-sliders">
+                        <div class="input-group" style="width: 100%;">
+                            <p style="margin-top: 15px;" id="padding-right-slider">
+                                <label for="padding-right" class="control-label">right:</label>
+                                <input style="width: 70%"
+                                    id="padding-right" type="text" data-slider-min="0" data-slider-max="100"
+                                    data-slider-step="1" data-slider-value="[0,100]"/>
+                            </p>
+                            <p style="margin-top: 35px;" id="padding-bottom-slider">
+                                <label for="padding-bottom" class="control-label">bottom:</label>
+                                <input style="width: 70%"
+                                    id="padding-bottom" type="text" data-slider-min="0" data-slider-max="100"
+                                    data-slider-step="1" data-slider-value="[0,100]"/>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="panel panel-default help-block">
                     <div class="panel-body">
                         <div class="checkbox">
@@ -176,12 +198,13 @@
 
 <script src="js/jquery-1.11.3.min.js"></script>
 <script src="js/bootstrap.min.js"></script>
+<script src="js/bootstrap-slider.min.js"></script>
 <script src="js/bootstrap-colorpicker.min.js"></script>
 <script src="js/blob.js"></script>
 <script src="js/canvas-toblob.js"></script>
 <script src="js/filesaver.min.js"></script>
 <script src="js/bootbox.min.js"></script>
-<script src="js/main.js?v=5"></script>
+<script src="js/main.js?v=6"></script>
 
 <script>
     (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
