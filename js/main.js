@@ -6,13 +6,15 @@ var BOX_RESIZE_TYPE = {None:0, Right:1, Bottom:2, Corner:3};
 
 var boundPos = {leftPos: -1, topPos: -1, rightPos: -1, bottomPos: -1};
 var shadowColor, fillColor, outlineColor, shadowBlur, shadowOffsetX, shadowOffsetY,
-    outlineWidth, isTransparentFill, currentType, roundRadius, hideNinepatches;
+    outlineWidth, isTransparentFill, currentType, roundRadius, hideNinepatches,
+    showContentArea;
 var updateDelayId;
 var objectWidth = 200, objectHeight = 200;
 var boxResizeMode = 0, boxResizeData = null, BOX_ANCHOR = 6;
 
 var CANVAS_MIN_WIDTH = 10, CANVAS_MIN_HEIGHT = 10;
 var CANVAS_MAX_WIDTH = 1000, CANVAS_MAX_HEIGHT = 1000;
+var CONTENT_AREA_COLOR = "rgba(53, 67, 172, 0.6)";
 
 /*CanvasRenderingContext2D.prototype.ellipse = function (x, y, r) {
     this.beginPath();
@@ -58,8 +60,11 @@ function exportAsPng() {
             if (result !== null && result !== "") {
                 //Show ninepatches If hidden when exporting
                 var hideNinepatchesTmp = false;
-                if (hideNinepatches) {
-                    hideNinepatchesTmp = true;
+                var showContentAreaTmp = false;
+                if (hideNinepatches || showContentArea) {
+                    hideNinepatchesTmp = hideNinepatches;
+                    showContentAreaTmp = showContentArea;
+                    showContentArea = false;
                     hideNinepatches = false;
                     redraw();
                 }
@@ -75,8 +80,9 @@ function exportAsPng() {
                     });
                 }
 
-                if (hideNinepatchesTmp) {
+                if (hideNinepatchesTmp || showContentAreaTmp) {
                     hideNinepatches = hideNinepatchesTmp;
+                    showContentArea = showContentAreaTmp;
                     redraw();
                 }
             }
@@ -96,6 +102,8 @@ function drawShadow(w, h, radius, type) {
     canvas.width = CANVAS_MAX_WIDTH;
     canvas.height = CANVAS_MAX_HEIGHT;
 
+    var paddingValues = getPaddingValues();
+
     //First time draw with filled background
     //for calculating final size of ninepatch
     var transparentTmp = isTransparentFill;
@@ -103,12 +111,29 @@ function drawShadow(w, h, radius, type) {
     drawShadowInternal(w, h, radius, type, true);
     updateBounds();
     isTransparentFill = transparentTmp;
-    ctx.clearRect(0,0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     canvas.width = Math.round(canvas.width - (boundPos.leftPos + boundPos.rightPos));
     canvas.height = Math.round(canvas.height - (boundPos.topPos + boundPos.bottomPos));
-    drawNinepatchLines(w, h);
+    drawNinepatchLines(w, h, paddingValues);
     drawShadowInternal(w, h, radius, type, false, true);
+
+    if (showContentArea) {
+        drawContentArea(w, h, paddingValues);
+    }
+}
+
+function drawContentArea(w, h, paddingValues) {
+    w -= outlineWidth;
+    h -= outlineWidth;
+    ctx.fillStyle = CONTENT_AREA_COLOR;
+    var outlineHalf = Math.round(outlineWidth / 2);
+    var x = getRelativeX() + outlineHalf;
+    var y = getRelativeY() + outlineHalf;
+    var xPad = paddingValues.horizontalLeft * w;
+    var yPad = paddingValues.verticalTop * h;
+    ctx.fillRect(x + xPad, y + yPad,
+        w - (w * paddingValues.horizontalRight) - xPad, h - (h * paddingValues.verticalBottom) - yPad);
 }
 
 function drawShadowInternal(w, h, radius, type, center, translate) {
@@ -156,9 +181,8 @@ function drawShadowInternal(w, h, radius, type, center, translate) {
     ctx.restore();
 
     if (isTransparentFill) {
-
-        ctx.globalCompositeOperation = 'destination-out';
         ctx.save();
+        ctx.globalCompositeOperation = 'destination-out';
         if (center) {
             x = centerPosX;
             y = centerPosY;
@@ -233,17 +257,22 @@ function updateBounds() {
     }
 }
 
-function drawNinepatchLines(w, h) {
+function getPaddingValues() {
+    var rightPad = $('#padding-right').slider("getValue");
+    var bottomPad = $('#padding-bottom').slider("getValue");
+    var rightTop = (rightPad[0] / 100);
+    var rightBottom = ((100 - rightPad[1]) / 100);
+    var bottomLeft = (bottomPad[0] / 100);
+    var bottomRight = ((100 - bottomPad[1]) / 100);
+
+    return {verticalTop: rightTop, verticalBottom: rightBottom,
+            horizontalLeft: bottomLeft, horizontalRight: bottomRight};
+}
+
+function drawNinepatchLines(w, h, paddingValues) {
     if (hideNinepatches) {
         return;
     }
-
-    var rightPad = $('#padding-right').slider("getValue");
-    var bottomPad = $('#padding-bottom').slider("getValue");
-    var rightPaddingTop = (rightPad[0] / 100);
-    var rightPaddingBottom = ((100 - rightPad[1]) / 100);
-    var bottomPadLeft = (bottomPad[0] / 100);
-    var bottomPadRight = ((100 - bottomPad[1]) / 100);
 
     var lineWidthPatch = 4;
 
@@ -258,10 +287,11 @@ function drawNinepatchLines(w, h) {
 
     //Subtract outline width from content padding
     if (!isTransparentFill) {
+        var outlineHalf = Math.round(outlineWidth / 2);
         w -= outlineWidth;
         h -= outlineWidth;
-        offsetX += Math.round(outlineWidth / 2);
-        offsetY += Math.round(outlineWidth / 2);
+        offsetX += outlineHalf;
+        offsetY += outlineHalf;
     }
 
     //Draw left
@@ -275,12 +305,12 @@ function drawNinepatchLines(w, h) {
     ctx.lineTo(Math.round(offsetX + s + lineWidthPatch), 0);
 
     //Draw right
-    ctx.moveTo(Math.round(width), Math.round(offsetY + (h * rightPaddingTop)));
-    ctx.lineTo(Math.round(width), Math.round(offsetY + h - (h * rightPaddingBottom)));
+    ctx.moveTo(Math.round(width), Math.round(offsetY + (h * paddingValues.verticalTop)));
+    ctx.lineTo(Math.round(width), Math.round(offsetY + h - (h * paddingValues.verticalBottom)));
 
     //Draw bottom
-    ctx.moveTo(Math.round(offsetX + (w * bottomPadLeft)), Math.round(height));
-    ctx.lineTo(Math.round(offsetX + w - (w * bottomPadRight)), Math.round(height));
+    ctx.moveTo(Math.round(offsetX + (w * paddingValues.horizontalLeft)), Math.round(height));
+    ctx.lineTo(Math.round(offsetX + w - (w * paddingValues.horizontalRight)), Math.round(height));
 
     ctx.stroke();
 }
@@ -406,6 +436,11 @@ $(document).ready(function () {
 
     $("#hide-patches").click(function () {
         hideNinepatches = $(this).is(":checked");
+        updateDelay();
+    });
+
+    $("#show-content").click(function () {
+        showContentArea = $(this).is(":checked");
         updateDelay();
     });
 
