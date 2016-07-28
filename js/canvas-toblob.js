@@ -1,7 +1,7 @@
 /* canvas-toBlob.js
  * A canvas.toBlob() implementation.
- * 2013-12-27
- * 
+ * 2016-05-26
+ *
  * By Eli Grey, http://eligrey.com and Devin Samarin, https://github.com/eboyjr
  * License: MIT
  *   See https://github.com/eligrey/canvas-toBlob.js/blob/master/LICENSE.md
@@ -70,47 +70,48 @@
 			, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51
 		]);
 	}
-	if (HTMLCanvasElement && !canvas_proto.toBlob) {
-		canvas_proto.toBlob = function(callback, type /*, ...args*/) {
-			if (!type) {
-				type = "image/png";
-			} if (this.mozGetAsFile) {
-				callback(this.mozGetAsFile("canvas", type));
-				return;
-			} if (this.msToBlob && /^\s*image\/png\s*(?:$|;)/i.test(type)) {
-				callback(this.msToBlob());
-				return;
-			}
-
-			var
-				args = Array.prototype.slice.call(arguments, 1)
-				, dataURI = this[to_data_url].apply(this, args)
-				, header_end = dataURI.indexOf(",")
-				, data = dataURI.substring(header_end + 1)
-				, is_base64 = is_base64_regex.test(dataURI.substring(0, header_end))
-				, blob
-				;
-			if (Blob.fake) {
-				// no reason to decode a data: URI that's just going to become a data URI again
-				blob = new Blob
-				if (is_base64) {
-					blob.encoding = "base64";
-				} else {
-					blob.encoding = "URI";
+	if (HTMLCanvasElement && (!canvas_proto.toBlob || !canvas_proto.toBlobHD)) {
+		if (!canvas_proto.toBlob)
+			canvas_proto.toBlob = function(callback, type /*, ...args*/) {
+				if (!type) {
+					type = "image/png";
+				} if (this.mozGetAsFile) {
+					callback(this.mozGetAsFile("canvas", type));
+					return;
+				} if (this.msToBlob && /^\s*image\/png\s*(?:$|;)/i.test(type)) {
+					callback(this.msToBlob());
+					return;
 				}
-				blob.data = data;
-				blob.size = data.length;
-			} else if (Uint8Array) {
-				if (is_base64) {
-					blob = new Blob([decode_base64(data)], {type: type});
-				} else {
-					blob = new Blob([decodeURIComponent(data)], {type: type});
-				}
-			}
-			callback(blob);
-		};
 
-		if (canvas_proto.toDataURLHD) {
+				var
+					args = Array.prototype.slice.call(arguments, 1)
+					, dataURI = this[to_data_url].apply(this, args)
+					, header_end = dataURI.indexOf(",")
+					, data = dataURI.substring(header_end + 1)
+					, is_base64 = is_base64_regex.test(dataURI.substring(0, header_end))
+					, blob
+					;
+				if (Blob.fake) {
+					// no reason to decode a data: URI that's just going to become a data URI again
+					blob = new Blob
+					if (is_base64) {
+						blob.encoding = "base64";
+					} else {
+						blob.encoding = "URI";
+					}
+					blob.data = data;
+					blob.size = data.length;
+				} else if (Uint8Array) {
+					if (is_base64) {
+						blob = new Blob([decode_base64(data)], {type: type});
+					} else {
+						blob = new Blob([decodeURIComponent(data)], {type: type});
+					}
+				}
+				callback(blob);
+			};
+
+		if (!canvas_proto.toBlobHD && canvas_proto.toDataURLHD) {
 			canvas_proto.toBlobHD = function() {
 				to_data_url = "toDataURLHD";
 				var blob = this.toBlob();
