@@ -13,9 +13,6 @@ footer small a {
     color: #7AA7CF;
 }
 
-.panel-body {
-    padding: 0 15px 0 15px !important;
-}
 
 #shadow_image {
     position: relative;
@@ -30,12 +27,13 @@ footer small a {
     position: relative;
     background: #ffffff;
     box-shadow: 0 1px 16px silver;
+    min-height: 670px;
 }
 
 #header {
     background: #E8F5E9;
     color: #66BB6A;
-    padding:16px;
+    padding: 16px;
     margin-left: -15px;
     margin-right: -15px;
 }
@@ -49,7 +47,7 @@ footer small a {
 }
 
 #header h3 {
-    margin:0;
+    margin: 0;
 }
 
 .slider-selection {
@@ -64,4 +62,19 @@ footer small a {
     float: left;
     width: 25%;
     font-weight: normal;
+}
+
+.panel-body {
+    background: #fafafa;
+}
+
+.panel-body > .form-group {
+    margin-top: 8px;
+}
+
+.panel-heading {
+    cursor: pointer;
+}
+.panel-body {
+    padding: 0 15px 0 15px !important;
 }

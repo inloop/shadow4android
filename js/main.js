@@ -1,26 +1,19 @@
 var canvas = document.getElementById("shadow_image");
 var ctx = canvas.getContext("2d");
 
-var SHADOW_TYPE = {Rect: 1, Ellipse: 2};
 var BOX_RESIZE_TYPE = {None:0, Right:1, Bottom:2, Corner:3};
 
 var boundPos = {leftPos: -1, topPos: -1, rightPos: -1, bottomPos: -1};
 var shadowColor, fillColor, outlineColor, shadowBlur, shadowOffsetX, shadowOffsetY,
-    outlineWidth, isTransparentFill, currentType, roundRadius, hideNinepatches,
+    outlineWidth, isTransparentFill, roundRadius, hideNinepatches,
     showContentArea;
-var updateDelayId;
 var objectWidth = 200, objectHeight = 200;
 var boxResizeMode = 0, boxResizeData = null, BOX_ANCHOR = 6;
 
 var CANVAS_MIN_WIDTH = 10, CANVAS_MIN_HEIGHT = 10;
-var CANVAS_MAX_WIDTH = 1000, CANVAS_MAX_HEIGHT = 1000;
+var CANVAS_MAX_WIDTH = 500, CANVAS_MAX_HEIGHT = 500;
 var CONTENT_AREA_COLOR = "rgba(53, 67, 172, 0.6)";
-
-/*CanvasRenderingContext2D.prototype.ellipse = function (x, y, r) {
-    this.beginPath();
-    this.arc(x, y, r, 0, 2 * Math.PI);
-    this.closePath()
-};*/
+var NINEPATCH_SIZING_WIDTH = 4;
 
 CanvasRenderingContext2D.prototype.roundRect = function (x, y, width, height, radius) {
     var cornerRadius = {upperLeft: 0, upperRight: 0, lowerLeft: 0, lowerRight: 0};
@@ -90,15 +83,7 @@ function exportAsPng() {
     });
 }
 
-function drawShadowRect(w, h, radius, fast) {
-    drawShadow(w, h, radius, SHADOW_TYPE.Rect);
-}
-
-/*function drawShadowEllipse(r) {
-    drawShadow(r / 2, r / 2, null, SHADOW_TYPE.Ellipse);
-}*/
-
-function drawShadow(w, h, radius, type) {
+function drawShadow(w, h, radius, fast) {
     canvas.width = CANVAS_MAX_WIDTH;
     canvas.height = CANVAS_MAX_HEIGHT;
 
@@ -108,15 +93,17 @@ function drawShadow(w, h, radius, type) {
     //for calculating final size of ninepatch
     var transparentTmp = isTransparentFill;
     isTransparentFill = false;
-    drawShadowInternal(w, h, radius, type, true);
-    updateBounds();
+    drawShadowInternal(w, h, radius, true);
+    if (!fast) {
+        updateBounds();
+    }
     isTransparentFill = transparentTmp;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     canvas.width = Math.round(canvas.width - (boundPos.leftPos + boundPos.rightPos));
     canvas.height = Math.round(canvas.height - (boundPos.topPos + boundPos.bottomPos));
     drawNinepatchLines(w, h, paddingValues);
-    drawShadowInternal(w, h, radius, type, false, true);
+    drawShadowInternal(w, h, radius, false, true);
 
     if (showContentArea) {
         drawContentArea(w, h, paddingValues);
@@ -136,7 +123,7 @@ function drawContentArea(w, h, paddingValues) {
         w - (w * paddingValues.horizontalRight) - xPad, h - (h * paddingValues.verticalBottom) - yPad);
 }
 
-function drawShadowInternal(w, h, radius, type, center, translate) {
+function drawShadowInternal(w, h, radius, center, translate) {
     var centerPosX = Math.round((canvas.width / 2) - (w / 2));
     var centerPosY = Math.round((canvas.height / 2) - (h / 2));
     var x = 0, y = 0;
@@ -145,22 +132,18 @@ function drawShadowInternal(w, h, radius, type, center, translate) {
     ctx.save();
     if (isTransparentFill) ctx.translate(offsetForTransparent, offsetForTransparent);
 
-    if (type == SHADOW_TYPE.Rect) {
-        if (center) {
-            x = centerPosX;
-            y = centerPosY;
-        } else if (translate) {
-            x = getRelativeX();
-            y = getRelativeY();
-        }
-        if (boxResizeMode != BOX_RESIZE_TYPE.None) {
-            x -= shadowOffsetX;
-            y -= shadowOffsetY;
-        }
-        ctx.roundRect(x, y, w, h, radius);
-    } else {
-        //ctx.ellipse(x, y, w);
+    if (center) {
+        x = centerPosX;
+        y = centerPosY;
+    } else if (translate) {
+        x = getRelativeX();
+        y = getRelativeY();
     }
+    if (boxResizeMode != BOX_RESIZE_TYPE.None) {
+        x -= shadowOffsetX;
+        y -= shadowOffsetY;
+    }
+    ctx.roundRect(x, y, w, h, radius);
 
     if (!isTransparentFill) {
         ctx.fillStyle = fillColor;
@@ -209,52 +192,40 @@ function getRelativeY() {
     return Math.round((CANVAS_MAX_HEIGHT / 2) - (objectHeight / 2) - boundPos.topPos);
 }
 
-function searchForNonAlphaPixel(row, col, imgPixels, width, height, opposite) {
-    var pos, alfa, pos2, alfa2;
-
-    pos = ((Math.round(row) * (width * 4)) + (Math.round(col) * 4));
-    pos2 = ((Math.round(height - row - 1) * (width * 4)) + (Math.round(width - col - 1) * 4));
-
-    alfa = imgPixels[pos + 3];
-    alfa2 = imgPixels[pos2 + 3];
-
-    //-1 because of ninepatch lines
-    if (!opposite) {
-        if (alfa != 0 && boundPos.leftPos == -1) {
-            boundPos.leftPos = col - 1;
-        }
-        if (alfa2 != 0 && boundPos.rightPos == -1) {
-            boundPos.rightPos = col - 2;
-        }
-    } else {
-        if (alfa != 0 && boundPos.topPos == -1) {
-            boundPos.topPos = row - 1;
-        }
-        if (alfa2 != 0 && boundPos.bottomPos == -1) {
-            boundPos.bottomPos = row - 2;
-        }
-    }
-}
-
 function updateBounds() {
-    boundPos.leftPos = boundPos.rightPos = boundPos.bottomPos = boundPos.topPos = -1;
+    boundPos.leftPos = boundPos.topPos = Number.MAX_VALUE;
+    boundPos.rightPos = boundPos.bottomPos = -1;
 
     var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    var row, col;
+    var imageWidth = imgData.width;
+    var imageHeight = imgData.height;
+    var imageData = imgData.data;
 
-    //search vertically
-    for (col = 0; col < imgData.width; col++) {
-        for (row = 0; row < imgData.height; row++) {
-            searchForNonAlphaPixel(row, col, imgData.data, imgData.width, imgData.height, false);
+    //Iterate through all pixels in image
+    //used to get image bounds (where shadow ends)
+    for(var i=0; i<imageData.length; i+=4) {
+        if (imageData[i+3] != 0) { //check for non alpha pixel
+            var x = (i / 4) % imageWidth;
+            var y = Math.floor((i / 4) / imageWidth);
+
+            if (x < boundPos.leftPos) {
+                boundPos.leftPos = x;
+            } else if (x > boundPos.rightPos) {
+                boundPos.rightPos = x;
+            }
+
+            if (y < boundPos.topPos) {
+                boundPos.topPos = y;
+            } else if (y > boundPos.bottomPos) {
+                boundPos.bottomPos = y;
+            }
         }
     }
 
-    //search horizontally
-    for (row = 0; row < imgData.height; row++) {
-        for (col = 0; col < imgData.width; col++) {
-            searchForNonAlphaPixel(row, col, imgData.data, imgData.width, imgData.height, true);
-        }
-    }
+    boundPos.leftPos = boundPos.leftPos - 1;
+    boundPos.topPos = boundPos.topPos - 1;
+    boundPos.rightPos = imageWidth - boundPos.rightPos - 2;
+    boundPos.bottomPos = imageHeight - boundPos.bottomPos - 2;
 }
 
 function getPaddingValues() {
@@ -273,8 +244,6 @@ function drawNinepatchLines(w, h, paddingValues) {
     if (hideNinepatches) {
         return;
     }
-
-    var lineWidthPatch = 4;
 
     ctx.strokeStyle = "black";
     ctx.lineWidth = 2;
@@ -296,13 +265,13 @@ function drawNinepatchLines(w, h, paddingValues) {
 
     //Draw left
     s = h / 2;
-    ctx.moveTo(0, Math.round(offsetY + s - lineWidthPatch / 2));
-    ctx.lineTo(0, Math.round(offsetY + s + lineWidthPatch));
+    ctx.moveTo(0, Math.round(offsetY + s - NINEPATCH_SIZING_WIDTH / 2));
+    ctx.lineTo(0, Math.round(offsetY + s + NINEPATCH_SIZING_WIDTH));
 
     //Draw top
     s = w / 2;
-    ctx.moveTo(Math.round(offsetX + s - lineWidthPatch / 2), 0);
-    ctx.lineTo(Math.round(offsetX + s + lineWidthPatch), 0);
+    ctx.moveTo(Math.round(offsetX + s - NINEPATCH_SIZING_WIDTH / 2), 0);
+    ctx.lineTo(Math.round(offsetX + s + NINEPATCH_SIZING_WIDTH), 0);
 
     //Draw right
     ctx.moveTo(Math.round(width), Math.round(offsetY + (h * paddingValues.verticalTop)));
@@ -315,7 +284,7 @@ function drawNinepatchLines(w, h, paddingValues) {
     ctx.stroke();
 }
 
-function redraw() {
+function redraw(fast) {
     //Limit ranges for input
     var minRadius = 0, maxRadius = 500;
     var minOffset = -500, maxOffset = 500;
@@ -335,7 +304,6 @@ function redraw() {
     shadowColor = colorShadow.val();
     fillColor = colorFill.val();
     outlineColor = outlineFill.val();
-    //currentType = $("#rectOpt").is(":checked") ? SHADOW_TYPE.Rect : SHADOW_TYPE.Ellipse;
 
     roundRadius = {
         upperLeft: parseFloatAndClamp($("#shadow-round-tl").val(), minRadius, maxRadius),
@@ -344,13 +312,7 @@ function redraw() {
         lowerRight: parseFloatAndClamp($("#shadow-round-br").val(), minRadius, maxRadius)
     };
 
-    currentType = SHADOW_TYPE.Rect;
-
-    if (currentType == SHADOW_TYPE.Rect) {
-        drawShadowRect(objectWidth, objectHeight, roundRadius);
-    } else {
-        //drawShadowEllipse(260);
-    }
+    drawShadow(objectWidth, objectHeight, roundRadius, fast);
 }
 
 function parseFloatAndClamp(val, min, max, noneValue) {
@@ -360,13 +322,6 @@ function parseFloatAndClamp(val, min, max, noneValue) {
     } else {
         return Math.min(Math.max(min, val), max);
     }
-}
-
-function updateDelay() {
-    clearTimeout(updateDelayId);
-    updateDelayId = window.setTimeout(function () {
-        redraw();
-    }, 150);
 }
 
 function setRoundSimple(val) {
@@ -381,34 +336,46 @@ function setRoundSimple(val) {
 $(document).ready(function () {
     $("#shadow-blur, #shadow-offset-x, #shadow-offset-y, #shadow-round-bl, " +
     "#shadow-round-br, #shadow-round-tl, #shadow-round-tr, #outline-width-input").on("input", function() {
-        updateDelay();
+        redraw();
     });
 
     $("#round-simple-input").on("input", function () {
         setRoundSimple($(this).val());
-        updateDelay();
+        redraw();
     });
 
     $("#rectOpt, #ellipseOpt").click(function () {
-        updateDelay();
+        redraw();
+    });
+
+    $("#bg-color-enable").click(function () {
+        if ($(this).is(":checked")) {
+            $(this).colorpicker({format: "hex", align:"left"}).on("changeColor", function (ev) {
+                $("#shadow_image, #main-container").css("background", ev.color.toHex());
+            }).colorpicker("show");
+            $(this).colorpicker("reposition");
+        } else {
+            $(this).colorpicker("destroy");
+            $("#shadow_image, #main-container").css("background", "");
+        }
     });
 
     $("#color-picker-shadow, #color-picker-fill, #color-picker-outline").colorpicker().on("changeColor", function(ev) {
-        updateDelay();
+        redraw();
     });
 
     var enableTxt = "enable";
     var disableTxt = "disable";
-    var input = "#color-picker-fill-input, #outline-width-input";
+    //var input = "#color-picker-fill-input, #outline-width-input, #color-picker-outline-input";
+    var input = "#fill-group, #outline-group";
     $("#fill-toggle").click(function () {
-        if ($(this).text() == enableTxt) {
+        var checked = $(this).is(":checked");
+        if (checked) {
             $(this).text(disableTxt);
-            $(input).prop("disabled", false);
-            $("#outline-group").fadeIn("slow");
+            $(input).find('*').prop("disabled", false);
         } else {
             $(this).text(enableTxt);
-            $(input).prop("disabled", true);
-            $("#outline-group").fadeOut();
+            $(input).find('*').prop("disabled", true);
         }
 
         redraw();
@@ -436,22 +403,22 @@ $(document).ready(function () {
 
     $("#hide-patches").click(function () {
         hideNinepatches = $(this).is(":checked");
-        updateDelay();
+        redraw(true);
     });
 
     $("#show-content").click(function () {
         showContentArea = $(this).is(":checked");
-        updateDelay();
+        redraw(true);
     });
 
     $("#box-width").on("input", function () {
         objectWidth = parseFloatAndClamp($(this).val(), CANVAS_MIN_WIDTH, CANVAS_MAX_WIDTH, 0);
-        updateDelay();
+        redraw();
     });
 
     $("#box-height").on("input", function () {
         objectHeight = parseFloatAndClamp($(this).val(), CANVAS_MIN_HEIGHT, CANVAS_MAX_HEIGHT, 0);
-        updateDelay();
+        redraw();
     });
 
 
@@ -466,18 +433,18 @@ $(document).ready(function () {
 
             if ((boxResizeMode == BOX_RESIZE_TYPE.Right || boxResizeMode == BOX_RESIZE_TYPE.Corner) && objectWidthChanged >= CANVAS_MIN_WIDTH) {
                 canvas.width = Math.round(boxResizeData.startSizeCanvas.width + mousePos.x - boxResizeData.startPos.x);
-                objectWidth = Math.round(objectWidthChanged);
+                objectWidth = Math.min(Math.round(objectWidthChanged), CANVAS_MAX_WIDTH);
                 draw = true;
             }
 
             if ((boxResizeMode == BOX_RESIZE_TYPE.Bottom || boxResizeMode == BOX_RESIZE_TYPE.Corner) && objectHeightChanged >= CANVAS_MIN_HEIGHT) {
                 canvas.height = Math.round(boxResizeData.startSizeCanvas.height + mousePos.y - boxResizeData.startPos.y);
-                objectHeight = Math.round(objectHeightChanged);
+                objectHeight = Math.min(Math.round(objectHeightChanged), CANVAS_MAX_HEIGHT);
                 draw = true;
             }
 
             if (draw) {
-                drawShadowInternal(objectWidth, objectHeight, roundRadius, currentType, true, false);
+                redraw();
             }
             updateSizeBoxValues();
         } else {
@@ -519,18 +486,18 @@ function sliderInit() {
 
     sliderBottom.on("slideStart", function() {
         sliderToogleTooltip(true, false);
-    });
-    sliderBottom.on("slideStop", function() {
-        redraw();
+    }).on("slideStop", function() {
         sliderToogleTooltip(true , true);
+    }).on("change", function() {
+        redraw(true);
     });
 
     sliderRight.on("slideStart", function() {
         sliderToogleTooltip(false, false);
-    });
-    sliderRight.on("slideStop", function() {
-        redraw();
-        sliderToogleTooltip(false, true);
+    }).on("slideStop", function() {
+        sliderToogleTooltip(false , true);
+    }).on("change", function() {
+        redraw(true);
     });
 }
 

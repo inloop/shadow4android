@@ -12,7 +12,7 @@
     <link href="css/main.css" rel="stylesheet">
     <link href="css/ribbons.min.css" rel="stylesheet">
     <link href="css/bootstrap-colorpicker.min.css" rel="stylesheet">
-    <link rel="image_src" href="img/icon.png" />
+    <link rel="image_src" href="img/icon.png"/>
 
     <!--[if lt IE 9]>
     <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -42,148 +42,244 @@
         </div>
 
         <div class="col-md-4">
-            <div class="well">
-                <div class="form-group">
-                    <label class="control-label">Round <span
-                            style="font-weight: normal">[<a href="javascript:void(0)"
-                                                            id="round-toggle">advanced</a>]</span></label>
+            <div class="panel">
 
-                    <div class="form-group" id="round-simple">
-                        <input id="round-simple-input" class="form-control" type="number" min="0" max="999" value="12">
-                    </div>
-
-                    <div class="form-inline" id="round-advanced" style="display: none">
-                        <div class="input-group" style="width: 100%">
-                            <span class="input-group-addon"><img src="img/tl.png" title="Top Left"></span>
-                            <input id="shadow-round-tl" class="form-control" type="number" min="-999" max="999"
-                                   value="12">
-
-                            <span class="input-group-addon"><img src="img/tr.png" title="Top Right"></span>
-                            <input id="shadow-round-tr" class="form-control" type="number" min="-999" max="999"
-                                   value="12">
+                <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+                    <div class="panel panel-default">
+                        <div class="panel-heading" role="tab" id="headingThree"
+                             data-toggle="collapse" data-parent="#accordion" href="#collapseThree"
+                             aria-expanded="true" aria-controls="collapseThree">
+                            <h4 class="panel-title">
+                                Basic
+                            </h4>
                         </div>
+                        <div id="collapseThree" class="panel-collapse collapse in" role="tabpanel"
+                             aria-labelledby="headingThree">
+                            <div class="panel-body">
 
-                        <div class="input-group" style="width: 100%">
-                            <span class="input-group-addon"><img src="img/bl.png" title="Bottom Left"></span>
-                            <input id="shadow-round-bl" class="form-control" type="number" min="-999" max="999"
-                                   value="12">
+                                <div class="form-group">
+                                    <label class="control-label">Round <span
+                                            style="font-weight: normal">[<a href="javascript:void(0)"
+                                                                            id="round-toggle">advanced</a>]</span></label>
 
-                            <span class="input-group-addon"><img src="img/br.png" title="Bottom Right"></span>
-                            <input id="shadow-round-br" class="form-control" type="number" min="-999" max="999"
-                                   value="12">
-                        </div>
-                    </div>
-                </div>
+                                    <div class="form-group" id="round-simple">
+                                        <input id="round-simple-input" class="form-control" type="number" min="0"
+                                               max="999" value="12">
+                                    </div>
 
-                <div class="form-group">
-                    <label class="control-label" for="color-picker-fill-input">Fill color <span
-                            style="font-weight: normal">[<a href="javascript:void(0)"
-                                                            id="fill-toggle">enable</a>]</span></label>
+                                    <div class="form-inline" id="round-advanced" style="display: none">
+                                        <div class="input-group" style="width: 100%">
+                                            <span class="input-group-addon"><img src="img/tl.png"
+                                                                                 title="Top Left"></span>
+                                            <input id="shadow-round-tl" class="form-control" type="number" min="-999"
+                                                   max="999"
+                                                   value="12">
 
-                    <div class="input-group" id="color-picker-fill">
+                                            <span class="input-group-addon"><img src="img/tr.png"
+                                                                                 title="Top Right"></span>
+                                            <input id="shadow-round-tr" class="form-control" type="number" min="-999"
+                                                   max="999"
+                                                   value="12">
+                                        </div>
 
-                        <input id="color-picker-fill-input" type="text" value="#BBDEFB" class="form-control" disabled/>
-                        <span class="input-group-addon"><i></i></span>
-                    </div>
-                </div>
+                                        <div class="input-group" style="width: 100%">
+                                            <span class="input-group-addon"><img src="img/bl.png"
+                                                                                 title="Bottom Left"></span>
+                                            <input id="shadow-round-bl" class="form-control" type="number" min="-999"
+                                                   max="999"
+                                                   value="12">
 
-                <div class="form-group" id="outline-group" style="display: none">
-                    <label class="control-label" for="color-picker-outline-input">Outline</label>
+                                            <span class="input-group-addon"><img src="img/br.png" title="Bottom Right"></span>
+                                            <input id="shadow-round-br" class="form-control" type="number" min="-999"
+                                                   max="999"
+                                                   value="12">
+                                        </div>
+                                    </div>
+                                </div>
 
-                    <div class="input-group" id="color-picker-outline">
-                        <input id="color-picker-outline-input" type="text" value="#4f4f4f"
-                               class="form-control"/>
-                        <span class="input-group-addon"><i></i></span>
-                    </div>
 
-                    <div class="form-group input-group" id="outline-width">
-                        <span class="input-group-addon">Width</span>
-                        <input id="outline-width-input" class="form-control" type="number" min="0" max="999" value="0">
-                    </div>
-                </div>
+                                <div class="form-group">
+                                    <label class="control-label" for="shadow-blur">Shadow blur</label>
+                                    <input id="shadow-blur" class="form-control" type="number" min="0" max="999"
+                                           value="20">
+                                </div>
 
-                <div class="form-group">
-                    <label class="control-label" for="color-picker-shadow-input">Shadow color</label>
+                                <div class="form-group">
+                                    <label class="control-label" for="color-picker-shadow-input">Shadow color</label>
 
-                    <div class="input-group" id="color-picker-shadow">
-                        <input id="color-picker-shadow-input" type="text" value="#757575" class="form-control"/>
-                        <span class="input-group-addon"><i></i></span>
-                    </div>
-                </div>
+                                    <div class="input-group" id="color-picker-shadow">
+                                        <input id="color-picker-shadow-input" type="text" value="#757575"
+                                               class="form-control"/>
+                                        <span class="input-group-addon"><i></i></span>
+                                    </div>
+                                </div>
 
-                <div class="form-group">
-                    <label class="control-label" for="shadow-offset-x">Shadow offset</label>
 
-                    <div class="form-inline">
-                        <div class="input-group" style="width: 100%">
-                            <span class="input-group-addon">X</span>
-                            <input id="shadow-offset-x" class="form-control" type="number" min="-999" max="999"
-                                   value="0">
+                                <div class="form-group">
+                                    <label class="control-label" for="shadow-offset-x">Shadow offset</label>
 
-                            <span class="input-group-addon">Y</span>
-                            <input id="shadow-offset-y" class="form-control" type="number" min="-999" max="999"
-                                   value="0">
-                        </div>
-                    </div>
-                </div>
+                                    <div class="form-inline">
+                                        <div class="input-group" style="width: 100%">
+                                            <span class="input-group-addon">X</span>
+                                            <input id="shadow-offset-x" class="form-control" type="number" min="-999"
+                                                   max="999"
+                                                   value="0">
 
-                <div class="form-group">
-                    <label class="control-label" for="shadow-blur">Blur</label>
-                    <input id="shadow-blur" class="form-control" type="number" min="0" max="999" value="20">
-                </div>
+                                            <span class="input-group-addon">Y</span>
+                                            <input id="shadow-offset-y" class="form-control" type="number" min="-999"
+                                                   max="999"
+                                                   value="0">
+                                        </div>
+                                    </div>
+                                </div>
 
-                <div class="form-group">
-                    <label class="control-label" for="box-width">Box size</label>
-
-                    <div class="form-inline">
-                        <div class="input-group" style="width: 100%">
-                            <span class="input-group-addon">Width</span>
-                            <input id="box-width" class="form-control" type="number" min="0" max="2000"
-                                   value="0">
-
-                            <span class="input-group-addon">Height</span>
-                            <input id="box-height" class="form-control" type="number" min="0" max="2000"
-                                   value="0">
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="form-group">
-                    <label class="control-label">Padding lines</label>
 
-                    <div class="form-inline" id="padding-sliders">
-                        <div class="input-group" style="width: 100%;">
-                            <p style="margin-top: 15px;" id="padding-right-slider">
-                                <label for="padding-right" class="control-label">right:</label>
-                                <input style="width: 70%"
-                                    id="padding-right" type="text" data-slider-min="0" data-slider-max="100"
-                                    data-slider-step="1" data-slider-value="[0,100]"/>
-                            </p>
-                            <p style="margin-top: 35px;" id="padding-bottom-slider">
-                                <label for="padding-bottom" class="control-label">bottom:</label>
-                                <input style="width: 70%"
-                                    id="padding-bottom" type="text" data-slider-min="0" data-slider-max="100"
-                                    data-slider-step="1" data-slider-value="[0,100]"/>
-                            </p>
+                    <div class="panel panel-default">
+                        <div class="panel-heading" role="tab" id="headingTwo"
+                             data-toggle="collapse" data-parent="#accordion"
+                             href="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+                            <h4 class="panel-title">
+                                Fill &amp; Outline
+                            </h4>
+                        </div>
+                        <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel"
+                             aria-labelledby="headingTwo">
+                            <div class="panel-body">
+
+                                <div class="checkbox">
+                                    <label>
+                                        <input type="checkbox" id="fill-toggle">Enabled
+                                    </label>
+                                </div>
+
+                                <div class="form-group" id="fill-group">
+                                    <label class="control-label" for="color-picker-fill-input" disabled>Fill
+                                        color</label>
+
+                                    <div class="input-group" id="color-picker-fill">
+
+                                        <input id="color-picker-fill-input" type="text" value="#ffffff"
+                                               class="form-control" disabled/>
+                                        <span class="input-group-addon"><i></i></span>
+                                    </div>
+                                </div>
+
+                                <div class="form-group" id="outline-group">
+                                    <label class="control-label" for="color-picker-outline-input"
+                                           disabled>Outline</label>
+
+                                    <div class="input-group" id="color-picker-outline">
+                                        <input id="color-picker-outline-input" type="text" value="#000000"
+                                               class="form-control" disabled/>
+                                        <span class="input-group-addon"><i></i></span>
+                                    </div>
+
+                                    <div class="form-group input-group" id="outline-width">
+                                        <span class="input-group-addon">Width</span>
+                                        <input id="outline-width-input" class="form-control" type="number" min="0"
+                                               max="999" value="0" disabled>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="panel panel-default help-block">
-                    <div class="panel-body">
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox" id="show-content">Show content area in preview
-                            </label>
+
+                    <div class="panel panel-default">
+                        <div class="panel-heading" role="tab" id="headingOne"
+                             data-toggle="collapse" data-parent="#accordion"
+                             href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                            <h4 class="panel-title">
+                                Advanced
+                            </h4>
                         </div>
+                        <div id="collapseOne" class="panel-collapse collapse" role="tabpanel"
+                             aria-labelledby="headingOne">
+                            <div class="panel-body">
 
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox" id="hide-patches">Hide ninepatch lines in preview
-                            </label>
+
+                                <div class="form-group">
+                                    <label class="control-label" for="box-width">Box size</label>
+
+                                    <div class="form-inline">
+                                        <div class="input-group" style="width: 100%">
+                                            <span class="input-group-addon">Width</span>
+                                            <input id="box-width" class="form-control" type="number" min="0" max="2000"
+                                                   value="0">
+
+                                            <span class="input-group-addon">Height</span>
+                                            <input id="box-height" class="form-control" type="number" min="0" max="2000"
+                                                   value="0">
+                                        </div>
+                                    </div>
+                                    <p class="small" style="color: gray;margin-top: 8px;">Drag right/bottom/corner to
+                                        change minimum size of
+                                        ninepatch.</p>
+
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="control-label">Padding lines</label>
+
+                                    <div class="form-inline" id="padding-sliders">
+                                        <div class="input-group" style="width: 100%;">
+                                            <p style="margin-top: 15px;" id="padding-right-slider">
+                                                <label for="padding-right" class="control-label">right:</label>
+                                                <input style="width: 70%"
+                                                       id="padding-right" type="text" data-slider-min="0"
+                                                       data-slider-max="100"
+                                                       data-slider-step="1" data-slider-value="[0,100]"/>
+                                            </p>
+                                            <p style="margin-top: 35px;" id="padding-bottom-slider">
+                                                <label for="padding-bottom" class="control-label">bottom:</label>
+                                                <input style="width: 70%"
+                                                       id="padding-bottom" type="text" data-slider-min="0"
+                                                       data-slider-max="100"
+                                                       data-slider-step="1" data-slider-value="[0,100]"/>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+                    </div>
 
-                        <p class="small">Drag right/bottom/corner to change minimum size of ninepatch.</p>
+
+                    <div class="panel panel-default">
+                        <div class="panel-heading" role="tab" id="headingFour"
+                             data-toggle="collapse" data-parent="#accordion" href="#collapseFour"
+                             aria-expanded="true" aria-controls="collapseFour">
+                            <h4 class="panel-title">
+                                Preview
+                            </h4>
+                        </div>
+                        <div id="collapseFour" class="panel-collapse collapse" role="tabpanel"
+                             aria-labelledby="headingThree">
+                            <div class="panel-body">
+
+                                <div class="checkbox">
+                                    <label>
+                                        <input type="checkbox" id="show-content">Show content area in preview
+                                    </label>
+                                </div>
+
+                                <div class="checkbox">
+                                    <label>
+                                        <input type="checkbox" id="hide-patches">Hide ninepatch lines in preview
+                                    </label>
+                                </div>
+
+                                <div class="checkbox">
+                                    <label>
+                                        <input type="checkbox" id="bg-color-enable" value="silver">Set background color
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -208,7 +304,7 @@
 <script src="js/canvas-toblob.js"></script>
 <script src="js/filesaver.min.js"></script>
 <script src="js/bootbox.min.js"></script>
-<script src="js/main.js?v=7"></script>
+<script src="js/main.js?v=8"></script>
 
 <script>
     (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
