@@ -3,7 +3,9 @@ var ctx = canvas.getContext("2d");
 
 var BOX_RESIZE_TYPE = {None:0, Right:1, Bottom:2, Corner:3};
 
-var boundPos = {leftPos: -1, topPos: -1, rightPos: -1, bottomPos: -1};
+var boundPos = {leftPos: -1, topPos: -1, rightPos: -1, bottomPos: -1, canvasWidth: -1, canvasHeight: -1,
+                clipLeft: -1};
+var clipSide = {left: false, top: false, right: false, bottom: false};
 var shadowColor, fillColor, outlineColor, shadowBlur, shadowOffsetX, shadowOffsetY,
     outlineWidth, isTransparentFill, roundRadius, hideNinepatches,
     showContentArea;
@@ -83,27 +85,38 @@ function exportAsPng() {
     });
 }
 
-function drawShadow(w, h, radius, fast) {
+function predraw(w, h, radius) {
     canvas.width = CANVAS_MAX_WIDTH;
     canvas.height = CANVAS_MAX_HEIGHT;
 
+    var transparentTmp = isTransparentFill;
+    isTransparentFill = false;
+    drawShadowInternal(w, h, radius, true);
+
+    updateBounds();
+
+    isTransparentFill = transparentTmp;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function drawShadow(w, h, radius, fast) {
     var paddingValues = getPaddingValues();
 
     //First time draw with filled background
     //for calculating final size of ninepatch
-    var transparentTmp = isTransparentFill;
-    isTransparentFill = false;
-    drawShadowInternal(w, h, radius, true);
     if (!fast) {
-        updateBounds();
+        predraw(w, h, radius);
     }
-    isTransparentFill = transparentTmp;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    canvas.width = Math.round(canvas.width - (boundPos.leftPos + boundPos.rightPos));
-    canvas.height = Math.round(canvas.height - (boundPos.topPos + boundPos.bottomPos));
-    drawNinepatchLines(w, h, paddingValues);
+    //Set canvas size to calculated size
+    canvas.width = boundPos.canvasWidth;
+    canvas.height = boundPos.canvasHeight;
+    
+    
     drawShadowInternal(w, h, radius, false, true);
+    
+    drawNinepatchLines(w, h, paddingValues);
+    
 
     if (showContentArea) {
         drawContentArea(w, h, paddingValues);
@@ -226,6 +239,26 @@ function updateBounds() {
     boundPos.topPos = boundPos.topPos - 1;
     boundPos.rightPos = imageWidth - boundPos.rightPos - 2;
     boundPos.bottomPos = imageHeight - boundPos.bottomPos - 2;
+
+    //Calculate final canvas width and height
+    boundPos.canvasWidth = Math.round(canvas.width - (boundPos.leftPos + boundPos.rightPos));
+    boundPos.canvasHeight = Math.round(canvas.height - (boundPos.topPos + boundPos.bottomPos));
+
+    //Add clipping If set
+    var clipLeft = clipSide.left ? getRelativeX() + roundRadius.lowerLeft: 0;
+    var clipTop = clipSide.top ? getRelativeY() + roundRadius.upperLeft : 0;
+    var clipRight = clipSide.right ? boundPos.canvasWidth - objectWidth - getRelativeX() + roundRadius.lowerRight: 0;
+    var clipBottom = clipSide.bottom ? boundPos.canvasHeight - objectHeight - getRelativeY() + roundRadius.upperRight: 0;
+
+    boundPos.leftPos += clipLeft;
+    boundPos.topPos += clipTop;
+    boundPos.rightPos += clipRight;
+    boundPos.bottomPos += clipBottom;
+
+    boundPos.clipLeft = clipLeft;
+
+    boundPos.canvasWidth -= clipLeft + clipRight;
+    boundPos.canvasHeight -= clipBottom + clipTop;
 }
 
 function getPaddingValues() {
@@ -245,12 +278,10 @@ function drawNinepatchLines(w, h, paddingValues) {
         return;
     }
 
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = 2;
-
     var s = 0;
     var offsetX = getRelativeX();
     var offsetY = getRelativeY();
+    var ninepatchLineWidth = 1;
     var width = canvas.width;
     var height = canvas.height;
 
@@ -262,6 +293,21 @@ function drawNinepatchLines(w, h, paddingValues) {
         offsetX += outlineHalf;
         offsetY += outlineHalf;
     }
+
+    //Clear 1px frame around image for ninepatch pixels
+    //Top
+    ctx.clearRect(0, 0, width, ninepatchLineWidth);
+    //Bottom
+    ctx.clearRect(0, height - ninepatchLineWidth, width, ninepatchLineWidth);
+    //Left
+    ctx.clearRect(0, 0, ninepatchLineWidth, height);
+    //Right
+    ctx.clearRect(width - ninepatchLineWidth, 0, ninepatchLineWidth, height);
+
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = ninepatchLineWidth * 2;
+
+    ctx.beginPath();
 
     //Draw left
     s = h / 2;
@@ -275,13 +321,21 @@ function drawNinepatchLines(w, h, paddingValues) {
 
     //Draw right
     ctx.moveTo(Math.round(width), Math.round(offsetY + (h * paddingValues.verticalTop)));
-    ctx.lineTo(Math.round(width), Math.round(offsetY + h - (h * paddingValues.verticalBottom)));
+    ctx.lineTo(Math.round(width), Math.round(offsetY + h - (h * paddingValues.verticalBottom - ninepatchLineWidth)));
 
     //Draw bottom
     ctx.moveTo(Math.round(offsetX + (w * paddingValues.horizontalLeft)), Math.round(height));
     ctx.lineTo(Math.round(offsetX + w - (w * paddingValues.horizontalRight)), Math.round(height));
 
+    ctx.closePath();
     ctx.stroke();
+
+    //Clear right top corner
+    ctx.clearRect(width - ninepatchLineWidth, 0, ninepatchLineWidth, ninepatchLineWidth);
+    //Clear right bottom corner
+    ctx.clearRect(width - ninepatchLineWidth, height - ninepatchLineWidth, ninepatchLineWidth, ninepatchLineWidth);
+    //Clear left bottom corner
+    ctx.clearRect(0, height - ninepatchLineWidth, ninepatchLineWidth, ninepatchLineWidth);
 }
 
 function redraw(fast) {
@@ -364,17 +418,13 @@ $(document).ready(function () {
         redraw();
     });
 
-    var enableTxt = "enable";
-    var disableTxt = "disable";
     //var input = "#color-picker-fill-input, #outline-width-input, #color-picker-outline-input";
     var input = "#fill-group, #outline-group";
     $("#fill-toggle").click(function () {
         var checked = $(this).is(":checked");
         if (checked) {
-            $(this).text(disableTxt);
             $(input).find('*').prop("disabled", false);
         } else {
-            $(this).text(enableTxt);
             $(input).find('*').prop("disabled", true);
         }
 
@@ -421,6 +471,22 @@ $(document).ready(function () {
         redraw();
     });
 
+    $("#clip-left").click(function () {
+        clipSide.left = $(this).is(":checked");
+        redraw();
+    });
+    $("#clip-right").click(function () {
+        clipSide.right = $(this).is(":checked");
+        redraw();
+    });
+    $("#clip-top").click(function () {
+        clipSide.top = $(this).is(":checked");
+        redraw();
+    });
+    $("#clip-bottom").click(function () {
+        clipSide.bottom = $(this).is(":checked");
+        redraw();
+    });
 
     //Resizing box
     $(this).mousemove(function f(e) {
