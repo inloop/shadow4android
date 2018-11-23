@@ -12,6 +12,11 @@ var shadowColor, fillColor, outlineColor, shadowBlur, shadowOffsetX, shadowOffse
 var objectWidth = 200, objectHeight = 200;
 var boxResizeMode = 0, boxResizeData = null, BOX_ANCHOR = 6;
 
+var paddingLeft=0;
+var paddingRight=0;
+var paddingTop=0;
+var paddingBottom=0;
+
 var CANVAS_MIN_WIDTH = 10, CANVAS_MIN_HEIGHT = 10;
 var CANVAS_MAX_WIDTH = 500, CANVAS_MAX_HEIGHT = 500;
 var CONTENT_AREA_COLOR = "rgba(53, 67, 172, 0.6)";
@@ -93,7 +98,7 @@ function predraw(w, h, radius) {
     isTransparentFill = false;
     drawShadowInternal(w, h, radius, true);
 
-    updateBounds();
+    updateBounds(w, h);
 
     isTransparentFill = transparentTmp;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -111,12 +116,12 @@ function drawShadow(w, h, radius, fast) {
     //Set canvas size to calculated size
     canvas.width = boundPos.canvasWidth;
     canvas.height = boundPos.canvasHeight;
-    
-    
+
+
     drawShadowInternal(w, h, radius, false, true);
-    
+
     drawNinepatchLines(w, h, paddingValues);
-    
+
 
     if (showContentArea) {
         drawContentArea(w, h, paddingValues);
@@ -205,7 +210,7 @@ function getRelativeY() {
     return Math.round((CANVAS_MAX_HEIGHT / 2) - (objectHeight / 2) - boundPos.topPos);
 }
 
-function updateBounds() {
+function updateBounds(w, h) {
     boundPos.leftPos = boundPos.topPos = Number.MAX_VALUE;
     boundPos.rightPos = boundPos.bottomPos = -1;
 
@@ -233,6 +238,32 @@ function updateBounds() {
                 boundPos.bottomPos = y;
             }
         }
+    }
+
+    var actualWidth = boundPos.rightPos - boundPos.leftPos;
+    var actualHeight = boundPos.bottomPos - boundPos.topPos;
+    var actualPaddingTop = imageHeight/2 - h/2 - boundPos.topPos;
+    var actualPaddingBottom = boundPos.bottomPos - (imageHeight/2 + h/2);
+    var actualPaddingLeft = imageWidth/2 - w/2 - boundPos.leftPos;
+    var actualPaddingRight = boundPos.rightPos - (imageWidth/2 + w/2);
+
+    var msg = ['actual size: [', actualWidth, actualHeight, ']',
+        ' shadow [', actualPaddingTop, actualPaddingRight, actualPaddingBottom, actualPaddingLeft,  ']'].join(' ');
+    //show the actual size
+    $('#actual-padding').html(msg);
+
+    //change to desire bounds
+    if(paddingLeft != 0){
+        boundPos.leftPos = (imageWidth - w) / 2 - paddingLeft;
+    }
+    if(paddingRight != 0){
+        boundPos.rightPos = imageWidth / 2 + w / 2 + paddingLeft;
+    }
+    if(paddingTop != 0){
+        boundPos.topPos = (imageHeight - h) / 2 - paddingTop;
+    }
+    if(paddingBottom != 0){
+        boundPos.bottomPos = imageHeight / 2 + h / 2 + paddingBottom;
     }
 
     boundPos.leftPos = boundPos.leftPos - 1;
@@ -366,6 +397,11 @@ function redraw(fast) {
         lowerRight: parseFloatAndClamp($("#shadow-round-br").val(), minRadius, maxRadius)
     };
 
+    paddingTop = parseFloatAndClamp($('#padding-top-line').val(), 0, CANVAS_MAX_WIDTH, 0);
+    paddingBottom = parseFloatAndClamp($('#padding-bottom-line').val(), 0, CANVAS_MAX_WIDTH, 0);
+    paddingLeft = parseFloatAndClamp($('#padding-left-line').val(), 0, CANVAS_MAX_WIDTH, 0);
+    paddingRight = parseFloatAndClamp($('#padding-right-line').val(), 0, CANVAS_MAX_WIDTH, 0);
+
     drawShadow(objectWidth, objectHeight, roundRadius, fast);
 }
 
@@ -485,6 +521,9 @@ $(document).ready(function () {
     });
     $("#clip-bottom").click(function () {
         clipSide.bottom = $(this).is(":checked");
+        redraw();
+    });
+    $("#padding-top-line, #padding-bottom-line, #padding-left-line, #padding-right-line").on('input', function(){
         redraw();
     });
 
