@@ -200,17 +200,13 @@
                         <div id="collapseOne" class="panel-collapse collapse" role="tabpanel"
                              aria-labelledby="headingOne">
                             <div class="panel-body">
-
-
                                 <div class="form-group">
                                     <label class="control-label" for="box-width">Box size</label>
-
                                     <div class="form-inline">
                                         <div class="input-group" style="width: 100%">
                                             <span class="input-group-addon">Width</span>
                                             <input id="box-width" class="form-control" type="number" min="0" max="2000"
                                                    value="0">
-
                                             <span class="input-group-addon">Height</span>
                                             <input id="box-height" class="form-control" type="number" min="0" max="2000"
                                                    value="0">
@@ -219,9 +215,7 @@
                                     <p class="small" style="color: gray;margin-top: 8px;">Drag right/bottom/corner to
                                         change minimum size of
                                         ninepatch.</p>
-
                                 </div>
-
                                 <div class="form-group">
                                     <label class="control-label">Padding lines</label>
 
@@ -261,6 +255,29 @@
                                             <input type="checkbox" id="clip-bottom">Bottom
                                         </label>
                                     </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label" for="box-width">Padding size</label>
+                                    <div class="form-inline">
+                                        <div class="input-group" style="width: 100%">
+                                            <span class="input-group-addon" style="width: 25%">Left</span>
+                                            <input id="padding-left-line" class="form-control" type="number" min="0" max="2000"
+                                                   value="0">
+                                            <span class="input-group-addon" style="width: 25%">Right</span>
+                                            <input id="padding-right-line" class="form-control" type="number" min="0" max="2000"
+                                                   value="0">
+                                        </div>
+                                        <div class="input-group" style="width: 100%">
+                                            <span class="input-group-addon" style="width: 25%">Top</span>
+                                            <input id="padding-top-line" class="form-control" type="number" min="0" max="2000"
+                                                   value="0">
+                                            <span class="input-group-addon" style="width: 25%">Bottom</span>
+                                            <input id="padding-bottom-line" class="form-control" type="number" min="0" max="2000"
+                                                   value="0">
+                                        </div>
+                                    </div>
+                                    <p class="small" style="color: gray;margin-top: 8px;">change padding line position to content</p>
+                                    <p id="actual-padding" class="small" style="color: gray;margin-top: 8px;">change padding line position to content</p>
                                 </div>
                             </div>
                         </div>
