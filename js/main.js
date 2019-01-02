@@ -6,7 +6,7 @@ var BOX_RESIZE_TYPE = {None:0, Right:1, Bottom:2, Corner:3};
 var boundPos = {leftPos: -1, topPos: -1, rightPos: -1, bottomPos: -1, canvasWidth: -1, canvasHeight: -1,
                 clipLeft: -1};
 var clipSide = {left: false, top: false, right: false, bottom: false};
-var shadowColor, fillColor, outlineColor, shadowBlur, shadowOffsetX, shadowOffsetY,
+var shadowColor, fillColor, backgroundFillColor, outlineColor, shadowBlur, shadowOffsetX, shadowOffsetY,
     outlineWidth, isTransparentFill, roundRadius, hideNinepatches,
     showContentArea;
 var objectWidth = 200, objectHeight = 200;
@@ -117,6 +117,10 @@ function drawShadow(w, h, radius, fast) {
     canvas.width = boundPos.canvasWidth;
     canvas.height = boundPos.canvasHeight;
 
+    ctx.save();
+    ctx.fillStyle = backgroundFillColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
 
     drawShadowInternal(w, h, radius, false, true);
 
@@ -377,6 +381,7 @@ function redraw(fast) {
     var minOutlineW = 0, maxOutlineW = 99;
 
     var colorFill = $("#color-picker-fill-input");
+    var backgroundColorFill = $("#color-picker-background-fill-input");
     var outlineFill = $("#color-picker-outline-input");
     var colorShadow = $("#color-picker-shadow-input");
 
@@ -388,6 +393,7 @@ function redraw(fast) {
 
     shadowColor = colorShadow.val();
     fillColor = colorFill.val();
+    backgroundFillColor = backgroundColorFill.val();
     outlineColor = outlineFill.val();
 
     roundRadius = {
@@ -450,7 +456,7 @@ $(document).ready(function () {
         }
     });
 
-    $("#color-picker-shadow, #color-picker-fill, #color-picker-outline").colorpicker().on("changeColor", function(ev) {
+    $("#color-picker-shadow, #color-picker-fill, #color-picker-outline, #color-picker-background-fill").colorpicker().on("changeColor", function(ev) {
         redraw();
     });
 
