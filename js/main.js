@@ -257,7 +257,7 @@ function updateBounds(w, h) {
         boundPos.leftPos = (imageWidth - w) / 2 - paddingLeft;
     }
     if(paddingRight != 0){
-        boundPos.rightPos = imageWidth / 2 + w / 2 + paddingLeft;
+        boundPos.rightPos = imageWidth / 2 + w / 2 + paddingRight;
     }
     if(paddingTop != 0){
         boundPos.topPos = (imageHeight - h) / 2 - paddingTop;
