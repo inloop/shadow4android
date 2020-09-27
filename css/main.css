@@ -74,6 +74,7 @@ footer small a {
 
 .panel-heading {
     cursor: pointer;
+    user-select: none;
 }
 .panel-body {
     padding: 0 15px 0 15px !important;

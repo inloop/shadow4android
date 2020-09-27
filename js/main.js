@@ -168,7 +168,6 @@ function drawShadowInternal(w, h, radius, center, translate) {
     ctx.roundRect(x, y, w, h, radius);
 
     if (!isTransparentFill) {
-        ctx.fillStyle = fillColor;
         setShadow(shadowOffsetX, shadowOffsetY, shadowBlur, shadowColor);
     } else {
         setShadow(shadowOffsetX - offsetForTransparent, shadowOffsetY - offsetForTransparent, shadowBlur, shadowColor);
@@ -185,25 +184,32 @@ function drawShadowInternal(w, h, radius, center, translate) {
 
     ctx.restore();
 
-    if (isTransparentFill) {
+    ctx.save();
+
+    ctx.globalCompositeOperation = 'destination-out';
+    if (center) {
+        x = centerPosX;
+        y = centerPosY;
+    } else if (translate) {
+        x = getRelativeX();
+        y = getRelativeY();
+    }
+    if (boxResizeMode != BOX_RESIZE_TYPE.None) {
+        x -= shadowOffsetX;
+        y -= shadowOffsetY;
+    }
+    ctx.roundRect(x, y, w, h, radius);
+    ctx.fill();
+    ctx.restore();
+
+    if (!isTransparentFill)
+    {
         ctx.save();
-        ctx.globalCompositeOperation = 'destination-out';
-        if (center) {
-            x = centerPosX;
-            y = centerPosY;
-        } else if (translate) {
-            x = getRelativeX();
-            y = getRelativeY();
-        }
-        if (boxResizeMode != BOX_RESIZE_TYPE.None) {
-            x -= shadowOffsetX;
-            y -= shadowOffsetY;
-        }
+        ctx.fillStyle = fillColor;
         ctx.roundRect(x, y, w, h, radius);
         ctx.fill();
         ctx.restore();
     }
-
 }
 
 function getRelativeX() {
